@@ -32,6 +32,7 @@ dependencies {
 
     // Database
     runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.postgresql:postgresql'
 
     // QueryDSL
     implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
