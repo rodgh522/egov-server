@@ -4,10 +4,21 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
 
+/**
+ * Tenant entity - represents a tenant in the multi-tenant system.
+ *
+ * Note: This entity does NOT extend BaseEntity and does NOT have tenant filtering
+ * because it IS the root tenant table.
+ */
 @Entity
 @Table(name = "TENANTS")
+@EntityListeners(AuditingEntityListener.class)
 @Getter @Setter
 @NoArgsConstructor
 public class Tenant {
@@ -17,20 +28,34 @@ public class Tenant {
     private String tenantId;
 
     @Column(name = "TENANT_NAME", length = 100)
-    private String tenantNm;
+    private String tenantName;
 
     @Column(name = "TENANT_DESCRIPTION", length = 255)
-    private String tenantDc; // Description
+    private String tenantDescription;
 
     @Column(name = "USE_AT", length = 1)
     private String useAt;
 
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createDe;
+    @CreatedDate
+    @Column(name = "CREATED_DATE", nullable = false, updatable = false)
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    @Column(name = "UPDATED_DATE")
+    private LocalDateTime updatedDate;
 
     @PrePersist
     public void prePersist() {
-        this.createDe = LocalDateTime.now();
-        if (this.useAt == null) this.useAt = "Y";
+        if (this.useAt == null) {
+            this.useAt = "Y";
+        }
+        if (this.createdDate == null) {
+            this.createdDate = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedDate = LocalDateTime.now();
     }
 }

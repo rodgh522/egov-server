@@ -1,43 +1,41 @@
 package com.example.egov.domain.admin;
 
+import com.example.egov.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
+/**
+ * Role entity - represents a role in the RBAC system.
+ *
+ * Roles are assigned to users and grant permissions.
+ * Tenant filtering is applied via Hibernate filter.
+ */
 @Entity
 @Table(name = "ROLES")
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+@Filter(name = "tenantFilter", condition = "TENANT_ID = :tenantId")
 @Getter @Setter
 @NoArgsConstructor
-public class Role {
+public class Role extends BaseEntity {
+
     @Id
     @Column(name = "ROLE_ID", length = 20)
     private String roleId;
 
-    @Column(name = "ROLE_NAME", length = 60)
-    private String roleNm;
+    @Column(name = "ROLE_NAME", length = 100)
+    private String roleName;
 
-    @Column(name = "ROLE_PATTERN", length = 300)
-    private String rolePttrn;
-
-    @Column(name = "ROLE_DESCRIPTION", length = 200)
-    private String roleDc;
+    @Column(name = "ROLE_DESCRIPTION", length = 255)
+    private String roleDescription;
 
     @Column(name = "ROLE_TYPE", length = 80)
-    private String roleTy;
+    private String roleType;
 
     @Column(name = "ROLE_SORT_ORDER", length = 10)
-    private String roleSort;
-
-    @Column(name = "ROLE_CREATED_DATE")
-    private LocalDateTime roleCreatDe;
-
-    @Column(name = "TENANT_ID", length = 20)
-    private String tenantId;
-
-    @PrePersist
-    public void prePersist() {
-        this.roleCreatDe = LocalDateTime.now();
-    }
+    private String roleSortOrder;
 }

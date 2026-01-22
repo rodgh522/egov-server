@@ -34,6 +34,13 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
 
+    // Flyway Migration
+    implementation 'org.flywaydb:flyway-core:10.6.0'
+    implementation 'org.flywaydb:flyway-database-postgresql:10.6.0'
+
+    // AOP for Tenant Filter Aspect
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
     // QueryDSL
     implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
