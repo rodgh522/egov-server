@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * CommonCode entity - represents common codes for the system.
@@ -16,7 +16,7 @@ import org.hibernate.annotations.ParamDef;
  */
 @Entity
 @Table(name = "COMMON_CODES")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+
 @Filter(name = "tenantFilter", condition = "TENANT_ID = :tenantId")
 @Getter
 @Setter
@@ -37,6 +37,7 @@ public class CommonCode extends BaseEntity {
     private String codeDescription;
 
     @Column(name = "USE_AT", length = 1)
+    @JdbcTypeCode(SqlTypes.CHAR)
     private String useAt;
 
     @PrePersist

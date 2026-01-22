@@ -1,6 +1,8 @@
 package com.example.egov.domain.admin;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,13 +15,15 @@ import java.time.LocalDateTime;
 /**
  * Tenant entity - represents a tenant in the multi-tenant system.
  *
- * Note: This entity does NOT extend BaseEntity and does NOT have tenant filtering
+ * Note: This entity does NOT extend BaseEntity and does NOT have tenant
+ * filtering
  * because it IS the root tenant table.
  */
 @Entity
 @Table(name = "TENANTS")
 @EntityListeners(AuditingEntityListener.class)
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public class Tenant {
 
@@ -34,6 +38,7 @@ public class Tenant {
     private String tenantDescription;
 
     @Column(name = "USE_AT", length = 1)
+    @JdbcTypeCode(SqlTypes.CHAR)
     private String useAt;
 
     @CreatedDate

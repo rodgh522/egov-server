@@ -1,13 +1,16 @@
 package com.example.egov.domain.file;
 
-import com.example.egov.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,18 +23,28 @@ import java.util.List;
  */
 @Entity
 @Table(name = "FILES")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+
 @Filter(name = "tenantFilter", condition = "TENANT_ID = :tenantId")
-@Getter @Setter
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
 @NoArgsConstructor
-public class FileEntity extends BaseEntity {
+public class FileEntity {
 
     @Id
     @Column(name = "ATTACHMENT_FILE_ID", length = 20)
     private String attachmentFileId;
 
     @Column(name = "USE_AT", length = 1)
+    @JdbcTypeCode(SqlTypes.CHAR)
     private String useAt;
+
+    @Column(name = "TENANT_ID", length = 20)
+    private String tenantId;
+
+    @CreatedDate
+    @Column(name = "CREATED_DATETIME", nullable = false, updatable = false)
+    private LocalDateTime createdDateTime;
 
     @OneToMany(mappedBy = "fileEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FileDetail> fileDetails = new ArrayList<>();

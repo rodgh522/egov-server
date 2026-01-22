@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 /**
  * Role entity - represents a role in the RBAC system.
@@ -17,9 +15,10 @@ import org.hibernate.annotations.ParamDef;
  */
 @Entity
 @Table(name = "ROLES")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+
 @Filter(name = "tenantFilter", condition = "TENANT_ID = :tenantId")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public class Role extends BaseEntity {
 
