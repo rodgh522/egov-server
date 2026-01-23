@@ -12,12 +12,11 @@ import org.hibernate.type.SqlTypes;
 /**
  * Menu entity - represents a menu item in the system.
  *
- * Menus are hierarchical and can auto-generate permissions.
+ * Menus are hierarchical and auto-generate permissions via PermissionService.
  * Tenant filtering is applied via Hibernate filter.
  */
 @Entity
 @Table(name = "MENUS")
-
 @Filter(name = "tenantFilter", condition = "TENANT_ID = :tenantId")
 @Getter
 @Setter
@@ -36,7 +35,7 @@ public class Menu extends BaseEntity {
     private String menuName;
 
     @Column(name = "MENU_TYPE", length = 20)
-    private String menuType; // MENU, FOLDER, LINK
+    private String menuType = "MENU"; // MENU, FOLDER, LINK
 
     @Column(name = "MENU_PATH", length = 255)
     private String menuPath;
@@ -53,33 +52,14 @@ public class Menu extends BaseEntity {
     @Column(name = "MENU_ORDER")
     private Integer menuOrder;
 
-    @Column(name = "MENU_DESCRIPTION", length = 255)
-    private String menuDescription;
-
     @Column(name = "IS_VISIBLE", length = 1)
     @JdbcTypeCode(SqlTypes.CHAR)
-    private String isVisible;
+    private String isVisible = "Y";
 
     @Column(name = "IS_ACTIVE", length = 1)
     @JdbcTypeCode(SqlTypes.CHAR)
-    private String isActive;
+    private String isActive = "Y";
 
-    @Column(name = "CREATED_BY", length = 20)
-    private String createdBy;
-
-    @PrePersist
-    public void prePersist() {
-        if (this.menuType == null) {
-            this.menuType = "MENU";
-        }
-        if (this.isVisible == null) {
-            this.isVisible = "Y";
-        }
-        if (this.isActive == null) {
-            this.isActive = "Y";
-        }
-        if (this.menuOrder == null) {
-            this.menuOrder = 0;
-        }
-    }
+    @Column(name = "MENU_DESCRIPTION", length = 255)
+    private String menuDescription;
 }

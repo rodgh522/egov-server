@@ -1,6 +1,8 @@
 package com.example.egov.domain.admin;
 
 import com.example.egov.domain.common.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +10,9 @@ import lombok.Setter;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User entity - represents a user in the system.
@@ -44,17 +49,26 @@ public class User extends BaseEntity {
     @Column(name = "PHONE", length = 20)
     private String phone;
 
-    @Column(name = "GROUP_ID", length = 20)
-    private String groupId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "GROUP_ID")
+    private Group group;
 
-    @Column(name = "BRANCH_ID", length = 20)
-    private String branchId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "BRANCH_ID")
+    private Branch branch;
 
-    @Column(name = "POSITION_ID", length = 20)
-    private String positionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "POSITION_ID")
+    private Position position;
 
-    @Column(name = "MANAGER_ID", length = 20)
-    private String managerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MANAGER_ID")
+    @JsonBackReference
+    private User manager;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<UserRole> userRoles = new ArrayList<>();
 
     @Column(name = "STATUS_CODE", length = 15)
     private String statusCode;

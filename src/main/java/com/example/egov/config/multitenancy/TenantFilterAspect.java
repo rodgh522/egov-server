@@ -11,10 +11,13 @@ import org.hibernate.Session;
 import org.springframework.stereotype.Component;
 
 /**
- * AOP Aspect for automatically enabling Hibernate tenant filter on all repository operations.
+ * AOP Aspect for automatically enabling Hibernate tenant filter on all
+ * repository operations.
  *
- * This aspect intercepts all method calls to JPA repositories and automatically enables
- * the "tenantFilter" Hibernate filter with the current tenant ID from TenantContext.
+ * This aspect intercepts all method calls to JPA repositories and automatically
+ * enables
+ * the "tenantFilter" Hibernate filter with the current tenant ID from
+ * TenantContext.
  *
  * How it works:
  * 1. Intercepts all repository method calls (via @Around advice)
@@ -25,7 +28,9 @@ import org.springframework.stereotype.Component;
  *
  * Filter Definition:
  * Must be defined on entity classes using:
- * @FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+ * 
+ * @FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId",
+ *                 type = String.class))
  * @Filter(name = "tenantFilter", condition = "TENANT_ID = :tenantId")
  */
 @Slf4j
@@ -65,8 +70,11 @@ public class TenantFilterAspect {
                 log.trace("Tenant filter enabled for repository call: {} with tenantId: {}",
                         joinPoint.getSignature().toShortString(), tenantId);
             } else {
+                // Explicitly disable filter if no tenant ID is present
+                session.disableFilter("tenantFilter");
+
                 log.warn("No tenant ID found in context for repository call: {}. " +
-                        "Filter not applied - this may expose cross-tenant data!",
+                        "Filter disabled - this may expose cross-tenant data!",
                         joinPoint.getSignature().toShortString());
             }
 
@@ -87,7 +95,8 @@ public class TenantFilterAspect {
      * Note: Currently commented out. Uncomment if needed.
      */
     // @Around("@annotation(org.springframework.data.jpa.repository.Query)")
-    // public Object enableTenantFilterForCustomQuery(ProceedingJoinPoint joinPoint) throws Throwable {
-    //     return enableTenantFilter(joinPoint);
+    // public Object enableTenantFilterForCustomQuery(ProceedingJoinPoint joinPoint)
+    // throws Throwable {
+    // return enableTenantFilter(joinPoint);
     // }
 }
