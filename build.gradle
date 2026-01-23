@@ -51,6 +51,11 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
     // eGovFrame
     implementation 'org.egovframe.rte:org.egovframe.rte.fdl.cmmn:4.3.0'
     implementation 'org.egovframe.rte:org.egovframe.rte.fdl.security:4.3.0'
