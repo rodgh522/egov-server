@@ -16,7 +16,4 @@ public class LoginRequest {
 
     @NotBlank(message = "Password is required")
     private String password;
-
-    @NotBlank(message = "Tenant ID is required")
-    private String tenantId;
 }

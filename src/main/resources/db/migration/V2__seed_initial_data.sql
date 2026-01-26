@@ -130,7 +130,7 @@ INSERT INTO USERS (ESNTL_ID, USER_ID, PASSWORD, USER_NAME, EMAIL, PHONE, GROUP_I
 VALUES (
     'SYS_USER001',
     'admin',
-    '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi',
+    '$2a$10$s//otrjgujlL5AHNk9vTE.jdxD04Hgml8EUsetosOVqjnR0RJ9Flq',
     'System Administrator',
     'admin@system.local',
     '+1-000-000-0000',

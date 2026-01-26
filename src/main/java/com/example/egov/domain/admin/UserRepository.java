@@ -13,13 +13,12 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByUserId(String userId);
 
     /**
-     * Find user by userId and tenantId using native query (bypasses Hibernate tenant filter)
+     * Find user by userId using native query (bypasses Hibernate tenant filter)
      * Used for login authentication
      */
-    @Query(value = "SELECT * FROM USERS WHERE USER_ID = :userId AND TENANT_ID = :tenantId AND USE_AT = 'Y'",
+    @Query(value = "SELECT * FROM USERS WHERE USER_ID = :userId AND USE_AT = 'Y'",
             nativeQuery = true)
-    Optional<User> findByUserIdAndTenantIdNative(@Param("userId") String userId,
-                                                  @Param("tenantId") String tenantId);
+    Optional<User> findByUserIdNative(@Param("userId") String userId);
 
     /**
      * Check if userId already exists

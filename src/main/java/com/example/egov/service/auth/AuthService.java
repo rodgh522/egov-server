@@ -31,13 +31,10 @@ public class AuthService {
      * Login and generate JWT tokens
      */
     public TokenResponse login(LoginRequest request) {
-        log.debug("Login attempt for userId: {}, tenantId: {}", request.getUserId(), request.getTenantId());
+        log.debug("Login attempt for userId: {}", request.getUserId());
 
         // Load user (bypasses tenant filter via native query)
-        CustomUserDetails userDetails = userDetailsService.loadUserByUserIdAndTenantId(
-                request.getUserId(),
-                request.getTenantId()
-        );
+        CustomUserDetails userDetails = userDetailsService.loadUserByUserIdForLogin(request.getUserId());
 
         // Verify password
         if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
@@ -45,20 +42,23 @@ public class AuthService {
             throw new BadCredentialsException("Invalid password");
         }
 
+        // TenantId is retrieved from the user record, not from request
+        String tenantId = userDetails.getTenantId();
+
         // Generate tokens
         String accessToken = jwtTokenProvider.createAccessToken(
                 userDetails.getEsntlId(),
                 userDetails.getUserId(),
-                userDetails.getTenantId(),
+                tenantId,
                 userDetails.getAuthorities()
         );
 
         String refreshToken = jwtTokenProvider.createRefreshToken(
                 userDetails.getEsntlId(),
-                userDetails.getTenantId()
+                tenantId
         );
 
-        log.info("Login successful for userId: {}, tenantId: {}", request.getUserId(), request.getTenantId());
+        log.info("Login successful for userId: {}, tenantId: {}", request.getUserId(), tenantId);
 
         return TokenResponse.of(
                 accessToken,

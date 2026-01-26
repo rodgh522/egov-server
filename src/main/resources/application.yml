@@ -28,7 +28,7 @@ spring:
 
 # JWT Configuration Placeholder
 jwt:
-  secret: "v3ryS3cr3tK3yF0rJwTS1gn1ngPurp0s3sOnlYDoN0tUs3InPr0duct10n"
+  secret: "v3ryS3cr3tK3yF0rJwTS1gn1ngPurp0s3sOnlYDoN0tUs3InPr0duct10nExt3nd3d"
   access-token-validity-in-seconds: 3600
   refresh-token-validity-in-seconds: 86400
 

@@ -44,13 +44,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     /**
-     * Load user by userId and tenantId (for login - bypasses tenant filter)
+     * Load user by userId for login (bypasses tenant filter)
+     * TenantId is retrieved from the user record
      */
     @Transactional(readOnly = true)
-    public CustomUserDetails loadUserByUserIdAndTenantId(String userId, String tenantId) {
-        User user = userRepository.findByUserIdAndTenantIdNative(userId, tenantId)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with userId: " + userId + " and tenantId: " + tenantId));
+    public CustomUserDetails loadUserByUserIdForLogin(String userId) {
+        User user = userRepository.findByUserIdNative(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userId));
 
         return createUserDetails(user);
     }
