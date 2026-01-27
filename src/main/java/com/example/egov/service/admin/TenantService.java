@@ -84,7 +84,11 @@ public class TenantService {
     }
 
     public Optional<Tenant> getTenant(String tenantId) {
-        verifySystemTenantAccess();
+        String currentTenantId = TenantContext.getCurrentTenantId();
+        // Allow access to own tenant or if SYSTEM tenant
+        if (!SYSTEM_TENANT_ID.equals(currentTenantId) && !tenantId.equals(currentTenantId)) {
+            throw new AccessDeniedException("Access denied to tenant: " + tenantId);
+        }
         return tenantRepository.findById(tenantId);
     }
 
@@ -96,6 +100,18 @@ public class TenantService {
     public List<Tenant> getActiveTenants() {
         verifySystemTenantAccess();
         return tenantRepository.findByUseAt("Y");
+    }
+
+    /**
+     * Get own tenant information.
+     * Any authenticated user can access their own tenant info.
+     */
+    public Optional<Tenant> getOwnTenant() {
+        String currentTenantId = TenantContext.getCurrentTenantId();
+        if (currentTenantId == null) {
+            throw new IllegalStateException("No tenant context available");
+        }
+        return tenantRepository.findById(currentTenantId);
     }
 
     @Transactional

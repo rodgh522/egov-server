@@ -38,6 +38,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class TenantFilterAspect {
 
+    private static final String SYSTEM_TENANT_ID = "SYSTEM";
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -48,6 +50,9 @@ public class TenantFilterAspect {
      * - All methods in classes implementing Repository interface
      * - Located in com.example.egov.domain package and sub-packages
      * - Ending with "Repository" class name
+     *
+     * SYSTEM tenant has access to all data across tenants (filter disabled).
+     * Other tenants only see their own data (filter enabled).
      *
      * @param joinPoint the join point representing the repository method call
      * @return the result of the repository method execution
@@ -63,12 +68,19 @@ public class TenantFilterAspect {
             String tenantId = TenantContext.getCurrentTenantId();
 
             if (tenantId != null) {
-                // Enable tenant filter
-                Filter filter = session.enableFilter("tenantFilter");
-                filter.setParameter("tenantId", tenantId);
+                // SYSTEM tenant can access all data - disable filter
+                if (SYSTEM_TENANT_ID.equals(tenantId)) {
+                    session.disableFilter("tenantFilter");
+                    log.trace("Tenant filter disabled for SYSTEM tenant: {}",
+                            joinPoint.getSignature().toShortString());
+                } else {
+                    // Enable tenant filter for non-SYSTEM tenants
+                    Filter filter = session.enableFilter("tenantFilter");
+                    filter.setParameter("tenantId", tenantId);
 
-                log.trace("Tenant filter enabled for repository call: {} with tenantId: {}",
-                        joinPoint.getSignature().toShortString(), tenantId);
+                    log.trace("Tenant filter enabled for repository call: {} with tenantId: {}",
+                            joinPoint.getSignature().toShortString(), tenantId);
+                }
             } else {
                 // Explicitly disable filter if no tenant ID is present
                 session.disableFilter("tenantFilter");

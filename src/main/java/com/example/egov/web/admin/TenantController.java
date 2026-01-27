@@ -50,6 +50,15 @@ public class TenantController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<TenantResponse> getOwnTenant() {
+        log.debug("Fetching own tenant");
+
+        return tenantService.getOwnTenant()
+                .map(tenant -> ResponseEntity.ok(TenantResponse.from(tenant)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/{tenantId}")
     public ResponseEntity<TenantResponse> getTenant(@PathVariable String tenantId) {
         log.debug("Fetching tenant: {}", tenantId);
