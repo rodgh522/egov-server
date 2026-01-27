@@ -30,7 +30,7 @@ public class TenantController {
 
     @PostMapping
     public ResponseEntity<TenantResponse> createTenant(@Valid @RequestBody TenantCreateRequest request) {
-        log.info("Creating tenant: {}", request.getTenantId());
+        log.info("Creating tenant: {}", request.getTenantName());
 
         Tenant tenant = tenantService.createTenant(request);
         TenantResponse response = TenantResponse.from(tenant);

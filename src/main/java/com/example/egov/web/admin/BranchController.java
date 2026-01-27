@@ -31,7 +31,7 @@ public class BranchController {
 
     @PostMapping
     public ResponseEntity<BranchResponse> createBranch(@Valid @RequestBody BranchCreateRequest request) {
-        log.info("Creating branch: {}", request.getBranchId());
+        log.info("Creating branch: {}", request.getBranchName());
 
         Branch branch = branchService.createBranch(request);
         BranchResponse response = BranchResponse.from(branch);

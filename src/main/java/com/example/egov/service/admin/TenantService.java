@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -40,14 +41,11 @@ public class TenantService {
     public Tenant createTenant(TenantCreateRequest request) {
         verifySystemTenantAccess();
 
-        if (tenantRepository.existsByTenantId(request.getTenantId())) {
-            throw new IllegalArgumentException("Tenant ID already exists: " + request.getTenantId());
-        }
-
-        log.info("Creating tenant: {}", request.getTenantId());
+        String tenantId = generateTenantId();
+        log.info("Creating tenant: {}", tenantId);
 
         Tenant tenant = new Tenant();
-        tenant.setTenantId(request.getTenantId());
+        tenant.setTenantId(tenantId);
         tenant.setTenantName(request.getTenantName());
         tenant.setTenantDescription(request.getTenantDescription());
         tenant.setUseAt(request.getUseAt());
@@ -56,6 +54,12 @@ public class TenantService {
         log.info("Tenant created successfully: {}", savedTenant.getTenantId());
 
         return savedTenant;
+    }
+
+    private String generateTenantId() {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String suffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        return "TEN" + timestamp.substring(timestamp.length() - 10) + suffix;
     }
 
     @Transactional

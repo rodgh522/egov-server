@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -40,10 +41,6 @@ public class PositionService {
     public Position createPosition(PositionCreateRequest request) {
         String currentTenantId = TenantContext.getCurrentTenantId();
 
-        if (positionRepository.existsByPositionId(request.getPositionId())) {
-            throw new IllegalArgumentException("Position ID already exists: " + request.getPositionId());
-        }
-
         if (positionRepository.existsByPositionCode(request.getPositionCode())) {
             throw new IllegalArgumentException("Position code already exists: " + request.getPositionCode());
         }
@@ -58,10 +55,11 @@ public class PositionService {
             tenantId = currentTenantId;
         }
 
-        log.info("Creating position: {} for tenant: {}", request.getPositionId(), tenantId);
+        String positionId = generatePositionId();
+        log.info("Creating position: {} for tenant: {}", positionId, tenantId);
 
         Position position = new Position();
-        position.setPositionId(request.getPositionId());
+        position.setPositionId(positionId);
         position.setPositionName(request.getPositionName());
         position.setPositionCode(request.getPositionCode());
         position.setPositionLevel(request.getPositionLevel());
@@ -149,5 +147,11 @@ public class PositionService {
 
     public boolean existsByPositionCode(String positionCode) {
         return positionRepository.existsByPositionCode(positionCode);
+    }
+
+    private String generatePositionId() {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String suffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        return "POS" + timestamp.substring(timestamp.length() - 10) + suffix;
     }
 }

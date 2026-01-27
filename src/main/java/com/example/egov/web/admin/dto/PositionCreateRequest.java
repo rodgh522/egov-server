@@ -10,10 +10,6 @@ import lombok.Setter;
 @Setter
 public class PositionCreateRequest {
 
-    @NotBlank(message = "Position ID is required")
-    @Size(max = 20, message = "Position ID must not exceed 20 characters")
-    private String positionId;
-
     @NotBlank(message = "Position name is required")
     @Size(max = 100, message = "Position name must not exceed 100 characters")
     private String positionName;

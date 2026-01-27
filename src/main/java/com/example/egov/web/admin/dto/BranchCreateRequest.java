@@ -10,10 +10,6 @@ import lombok.Setter;
 @Setter
 public class BranchCreateRequest {
 
-    @NotBlank(message = "Branch ID is required")
-    @Size(max = 20, message = "Branch ID must not exceed 20 characters")
-    private String branchId;
-
     @NotBlank(message = "Branch name is required")
     @Size(max = 100, message = "Branch name must not exceed 100 characters")
     private String branchName;

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -40,10 +41,6 @@ public class BranchService {
     public Branch createBranch(BranchCreateRequest request) {
         String currentTenantId = TenantContext.getCurrentTenantId();
 
-        if (branchRepository.existsByBranchId(request.getBranchId())) {
-            throw new IllegalArgumentException("Branch ID already exists: " + request.getBranchId());
-        }
-
         if (branchRepository.existsByBranchCode(request.getBranchCode())) {
             throw new IllegalArgumentException("Branch code already exists: " + request.getBranchCode());
         }
@@ -59,10 +56,11 @@ public class BranchService {
             tenantId = currentTenantId;
         }
 
-        log.info("Creating branch: {} for tenant: {}", request.getBranchId(), tenantId);
+        String branchId = generateBranchId();
+        log.info("Creating branch: {} for tenant: {}", branchId, tenantId);
 
         Branch branch = new Branch();
-        branch.setBranchId(request.getBranchId());
+        branch.setBranchId(branchId);
         branch.setBranchName(request.getBranchName());
         branch.setBranchCode(request.getBranchCode());
         branch.setBranchAddress(request.getBranchAddress());
@@ -182,5 +180,11 @@ public class BranchService {
 
     public boolean existsByBranchCode(String branchCode) {
         return branchRepository.existsByBranchCode(branchCode);
+    }
+
+    private String generateBranchId() {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String suffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        return "BRN" + timestamp.substring(timestamp.length() - 10) + suffix;
     }
 }

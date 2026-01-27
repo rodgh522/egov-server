@@ -31,7 +31,7 @@ public class PositionController {
 
     @PostMapping
     public ResponseEntity<PositionResponse> createPosition(@Valid @RequestBody PositionCreateRequest request) {
-        log.info("Creating position: {}", request.getPositionId());
+        log.info("Creating position: {}", request.getPositionName());
 
         Position position = positionService.createPosition(request);
         PositionResponse response = PositionResponse.from(position);

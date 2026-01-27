@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -43,10 +44,6 @@ public class GroupService {
     public Group createGroup(GroupCreateRequest request) {
         String currentTenantId = TenantContext.getCurrentTenantId();
 
-        if (groupRepository.existsByGroupId(request.getGroupId())) {
-            throw new IllegalArgumentException("Group ID already exists: " + request.getGroupId());
-        }
-
         if (groupRepository.existsByGroupCode(request.getGroupCode())) {
             throw new IllegalArgumentException("Group code already exists: " + request.getGroupCode());
         }
@@ -71,10 +68,11 @@ public class GroupService {
             throw new IllegalArgumentException("Branch must belong to the same tenant");
         }
 
-        log.info("Creating group: {} for tenant: {}", request.getGroupId(), tenantId);
+        String groupId = generateGroupId();
+        log.info("Creating group: {} for tenant: {}", groupId, tenantId);
 
         Group group = new Group();
-        group.setGroupId(request.getGroupId());
+        group.setGroupId(groupId);
         group.setGroupName(request.getGroupName());
         group.setGroupCode(request.getGroupCode());
         group.setGroupDescription(request.getGroupDescription());
@@ -171,5 +169,11 @@ public class GroupService {
 
     public boolean existsByGroupCode(String groupCode) {
         return groupRepository.existsByGroupCode(groupCode);
+    }
+
+    private String generateGroupId() {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String suffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        return "GRP" + timestamp.substring(timestamp.length() - 10) + suffix;
     }
 }

@@ -10,10 +10,6 @@ import lombok.Setter;
 @Setter
 public class GroupCreateRequest {
 
-    @NotBlank(message = "Group ID is required")
-    @Size(max = 20, message = "Group ID must not exceed 20 characters")
-    private String groupId;
-
     @NotBlank(message = "Group name is required")
     @Size(max = 100, message = "Group name must not exceed 100 characters")
     private String groupName;
