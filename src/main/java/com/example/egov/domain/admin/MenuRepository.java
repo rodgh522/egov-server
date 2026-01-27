@@ -17,6 +17,11 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     List<Menu> findByIsVisibleAndIsActiveOrderByMenuOrderAsc(String isVisible, String isActive);
 
+    @Query(value = "SELECT COUNT(*) > 0 FROM menus WHERE upper_menu_no = :upperMenuNo", nativeQuery = true)
+    boolean existsByUpperMenuNo(@Param("upperMenuNo") Long upperMenuNo);
+
+    List<Menu> findByUpperMenuNo(Long upperMenuNo);
+
     @Query("SELECT DISTINCT m FROM Menu m " +
             "WHERE m.tenantId = :tenantId " +
             "AND m.isVisible = 'Y' " +

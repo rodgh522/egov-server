@@ -171,13 +171,24 @@ public class MenuService {
      * Delete a menu.
      *
      * Associated permissions will be cascade deleted if FK constraints are configured.
+     * Deletion will fail if the menu has child menus referencing it.
      *
      * @param menuNo Menu ID to delete
+     * @throws IllegalStateException if menu has child menus
      */
     @Transactional
     public void deleteMenu(Long menuNo) {
         Menu menu = menuRepository.findById(menuNo)
                 .orElseThrow(() -> new IllegalArgumentException("Menu not found: " + menuNo));
+
+        List<Menu> children = menuRepository.findByUpperMenuNo(menuNo);
+        if (!children.isEmpty()) {
+            String childCodes = children.stream()
+                    .map(Menu::getMenuCode)
+                    .collect(java.util.stream.Collectors.joining(", "));
+            throw new IllegalStateException(
+                    "Cannot delete menu '" + menu.getMenuCode() + "' with child menus. Delete these first: " + childCodes);
+        }
 
         log.info("Deleting menu: {} (ID: {})", menu.getMenuCode(), menuNo);
         menuRepository.delete(menu);
@@ -192,5 +203,15 @@ public class MenuService {
      */
     public boolean existsByMenuCode(String menuCode) {
         return menuRepository.existsByMenuCode(menuCode);
+    }
+
+    /**
+     * Get child menus of a parent menu.
+     *
+     * @param parentMenuNo Parent menu ID
+     * @return List of child Menu entities
+     */
+    public List<Menu> getChildMenus(Long parentMenuNo) {
+        return menuRepository.findByUpperMenuNo(parentMenuNo);
     }
 }
