@@ -14,15 +14,13 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * JWT Token Provider
  * - Handles JWT token generation and validation
- * - Stores userId, tenantId, and roles as claims
+ * - Stores userId, tenantId, branchId, groupId, positionId, roleIds, permissions, and roles as claims
  */
 @Slf4j
 @Component
@@ -42,6 +40,11 @@ public class JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "roles";
     private static final String USER_ID_KEY = "userId";
     private static final String TENANT_ID_KEY = "tenantId";
+    private static final String BRANCH_ID_KEY = "branchId";
+    private static final String GROUP_ID_KEY = "groupId";
+    private static final String POSITION_ID_KEY = "positionId";
+    private static final String ROLE_IDS_KEY = "roleIds";
+    private static final String PERMISSIONS_KEY = "permissions";
 
     @PostConstruct
     protected void init() {
@@ -50,7 +53,34 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Create access token with user information and authorities
+     * Create access token with full user context from CustomUserDetails
+     */
+    public String createAccessToken(CustomUserDetails userDetails) {
+        String authoritiesString = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        long now = System.currentTimeMillis();
+        Date validity = new Date(now + (accessTokenValidityInSeconds * 1000));
+
+        return Jwts.builder()
+                .subject(userDetails.getEsntlId())
+                .claim(USER_ID_KEY, userDetails.getUserId())
+                .claim(TENANT_ID_KEY, userDetails.getTenantId())
+                .claim(BRANCH_ID_KEY, userDetails.getBranchId())
+                .claim(GROUP_ID_KEY, userDetails.getGroupId())
+                .claim(POSITION_ID_KEY, userDetails.getPositionId())
+                .claim(ROLE_IDS_KEY, new ArrayList<>(userDetails.getRoleIds()))
+                .claim(PERMISSIONS_KEY, new ArrayList<>(userDetails.getPermissions()))
+                .claim(AUTHORITIES_KEY, authoritiesString)
+                .issuedAt(new Date(now))
+                .expiration(validity)
+                .signWith(key, Jwts.SIG.HS512)
+                .compact();
+    }
+
+    /**
+     * Create access token with user information and authorities (legacy method for backward compatibility)
      */
     public String createAccessToken(String esntlId, String userId, String tenantId,
                                     Collection<? extends GrantedAuthority> authorities) {
@@ -91,13 +121,24 @@ public class JwtTokenProvider {
     /**
      * Extract Authentication from token
      */
+    @SuppressWarnings("unchecked")
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
 
         String esntlId = claims.getSubject();
         String userId = claims.get(USER_ID_KEY, String.class);
         String tenantId = claims.get(TENANT_ID_KEY, String.class);
+        String branchId = claims.get(BRANCH_ID_KEY, String.class);
+        String groupId = claims.get(GROUP_ID_KEY, String.class);
+        String positionId = claims.get(POSITION_ID_KEY, String.class);
         String authoritiesString = claims.get(AUTHORITIES_KEY, String.class);
+
+        // Parse roleIds and permissions from JWT claims (stored as JSON arrays)
+        List<String> roleIdsList = claims.get(ROLE_IDS_KEY, List.class);
+        List<String> permissionsList = claims.get(PERMISSIONS_KEY, List.class);
+
+        Set<String> roleIds = roleIdsList != null ? new HashSet<>(roleIdsList) : Collections.emptySet();
+        Set<String> permissions = permissionsList != null ? new HashSet<>(permissionsList) : Collections.emptySet();
 
         Collection<? extends GrantedAuthority> authorities;
         if (authoritiesString != null && !authoritiesString.isEmpty()) {
@@ -105,16 +146,21 @@ public class JwtTokenProvider {
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
         } else {
-            authorities = java.util.Collections.emptyList();
+            authorities = Collections.emptyList();
         }
 
-        CustomUserDetails principal = new CustomUserDetails(
-                userId,
-                "",
-                tenantId,
-                authorities
-        );
-        principal.setEsntlId(esntlId);
+        CustomUserDetails principal = CustomUserDetails.customBuilder()
+                .userId(userId)
+                .password("")
+                .tenantId(tenantId)
+                .esntlId(esntlId)
+                .branchId(branchId)
+                .groupId(groupId)
+                .positionId(positionId)
+                .roleIds(roleIds)
+                .permissions(permissions)
+                .authorities(authorities)
+                .build();
 
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }

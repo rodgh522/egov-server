@@ -1,11 +1,14 @@
 package com.example.egov.config;
 
+import com.example.egov.config.security.CustomPermissionEvaluator;
 import com.example.egov.config.security.JwtAuthenticationFilter;
 import com.example.egov.config.security.JwtTokenProvider;
 import com.example.egov.service.auth.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -26,7 +29,7 @@ import java.util.List;
 /**
  * EgovSecurityConfig
  * - Java Config replacement for explicit XML security settings.
- * - Implements Stateless Session (JWT).
+ * - Implements Stateless Session (JWT) with custom permission evaluation.
  */
 @Configuration
 @EnableWebSecurity
@@ -36,6 +39,7 @@ public class EgovSecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
+    private final CustomPermissionEvaluator customPermissionEvaluator;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -91,5 +95,15 @@ public class EgovSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    /**
+     * Configure custom permission evaluator for @PreAuthorize("hasPermission(...)") expressions
+     */
+    @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setPermissionEvaluator(customPermissionEvaluator);
+        return handler;
     }
 }

@@ -33,7 +33,7 @@ public class AuthService {
     public TokenResponse login(LoginRequest request) {
         log.debug("Login attempt for userId: {}", request.getUserId());
 
-        // Load user (bypasses tenant filter via native query)
+        // Load user with full context (bypasses tenant filter via native query)
         CustomUserDetails userDetails = userDetailsService.loadUserByUserIdForLogin(request.getUserId());
 
         // Verify password
@@ -42,23 +42,16 @@ public class AuthService {
             throw new BadCredentialsException("Invalid password");
         }
 
-        // TenantId is retrieved from the user record, not from request
-        String tenantId = userDetails.getTenantId();
-
-        // Generate tokens
-        String accessToken = jwtTokenProvider.createAccessToken(
-                userDetails.getEsntlId(),
-                userDetails.getUserId(),
-                tenantId,
-                userDetails.getAuthorities()
-        );
+        // Generate tokens with full user context
+        String accessToken = jwtTokenProvider.createAccessToken(userDetails);
 
         String refreshToken = jwtTokenProvider.createRefreshToken(
                 userDetails.getEsntlId(),
-                tenantId
+                userDetails.getTenantId()
         );
 
-        log.info("Login successful for userId: {}, tenantId: {}", request.getUserId(), tenantId);
+        log.info("Login successful for userId: {}, tenantId: {}",
+                request.getUserId(), userDetails.getTenantId());
 
         return TokenResponse.of(
                 accessToken,
@@ -70,6 +63,7 @@ public class AuthService {
 
     /**
      * Refresh access token using refresh token
+     * Reloads user details from database to get fresh permissions
      */
     public TokenResponse refreshToken(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
@@ -83,17 +77,15 @@ public class AuthService {
         String esntlId = jwtTokenProvider.getSubjectFromToken(refreshToken);
         String tenantId = jwtTokenProvider.getTenantIdFromToken(refreshToken);
 
-        // Get authentication from refresh token to extract user info
+        // Get authentication from refresh token to extract userId
         Authentication auth = jwtTokenProvider.getAuthentication(refreshToken);
         CustomUserDetails principal = (CustomUserDetails) auth.getPrincipal();
 
-        // Generate new access token
-        String newAccessToken = jwtTokenProvider.createAccessToken(
-                esntlId,
-                principal.getUserId(),
-                tenantId,
-                auth.getAuthorities()
-        );
+        // Reload user details from database to get fresh context (permissions may have changed)
+        CustomUserDetails freshUserDetails = userDetailsService.loadUserByUserIdForLogin(principal.getUserId());
+
+        // Generate new access token with fresh user context
+        String newAccessToken = jwtTokenProvider.createAccessToken(freshUserDetails);
 
         // Generate new refresh token (token rotation for security)
         String newRefreshToken = jwtTokenProvider.createRefreshToken(esntlId, tenantId);
